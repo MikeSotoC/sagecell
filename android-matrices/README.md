@@ -5,7 +5,7 @@ Proyecto Android nativo en Java. Calcula sin internet; no contiene SageMath ni S
 ## Funciones
 
 - Dos matrices editables A y B, de 1×1 a 6×6. Cambia las dimensiones con **Aplicar**; se conservan los valores de las celdas que permanecen.
-- Suma, resta y producto A × B. Transpuesta, determinante e inversa de A.
+- Suma, resta en ambos órdenes y productos A × B y B × A. Para ambas matrices: transpuesta, determinante, inversa, rango, forma escalonada reducida y traza.
 - Acepta enteros, negativos y decimales con punto o coma. Muestra hasta ocho cifras significativas. La aritmética usa `double`, no fracciones exactas ni álgebra simbólica.
 - Indica las dimensiones incompatibles, los campos inválidos y las matrices singulares. El cálculo del determinante/inversa usa eliminación con pivoteo parcial.
 

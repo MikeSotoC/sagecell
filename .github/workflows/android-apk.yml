@@ -18,8 +18,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Verificar motor matricial
+        run: |
+          mkdir -p /tmp/matrix-check
+          javac -d /tmp/matrix-check android-matrices/app/src/main/java/com/mikesotoc/matrices/MatrixOps.java android-matrices/tests/MatrixOpsCheck.java
+          java -cp /tmp/matrix-check MatrixOpsCheck
+      - uses: android-actions/setup-android@v3
       - name: Instalar Android SDK 35
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'

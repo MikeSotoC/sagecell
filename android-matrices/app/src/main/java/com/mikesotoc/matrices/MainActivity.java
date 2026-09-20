@@ -4,10 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -21,10 +19,11 @@ public class MainActivity extends Activity {
     private LinearLayout resultGrid;
     private final String[] sizes={"1","2","3","4","5","6"};
     private LinearLayout page;
+    private ScrollView scroll;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        ScrollView scroll=new ScrollView(this);
+        scroll=new ScrollView(this);
         scroll.setFillViewport(true);
         page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);page.setPadding(dp(16),dp(16),dp(16),dp(24));
         page.setBackgroundColor(0xfff5f7fb);
@@ -32,12 +31,20 @@ public class MainActivity extends Activity {
         TextView title=label("Matrices Offline",26,true);page.addView(title);
         page.addView(label("Cálculo local · decimales y enteros · matrices hasta 6 × 6",14,false));
         editors[0]=new MatrixEditor("A");editors[1]=new MatrixEditor("B");
-        page.addView(label("Operaciones con A y B",18,true));
-        rowButtons(new String[]{"A + B","A − B","A × B"},new int[]{0,1,2});
-        page.addView(label("Operaciones con A",18,true));
-        rowButtons(new String[]{"Transpuesta","Determinante","Inversa"},new int[]{3,4,5});
         result=label("Elige una operación para ver el resultado.",17,true);page.addView(result);
         resultGrid=new LinearLayout(this);resultGrid.setOrientation(LinearLayout.VERTICAL);page.addView(resultGrid);
+        page.addView(label("Operaciones con A y B",18,true));
+        rowButtons(new String[]{"A + B","A − B"},new int[]{0,1});
+        rowButtons(new String[]{"B − A","A × B"},new int[]{2,3});
+        rowButtons(new String[]{"B × A"},new int[]{4});
+        page.addView(label("Operaciones con A",18,true));
+        rowButtons(new String[]{"Aᵀ","det(A)"},new int[]{5,6});
+        rowButtons(new String[]{"A⁻¹","rango(A)"},new int[]{7,8});
+        rowButtons(new String[]{"Reducir A","traza(A)"},new int[]{9,10});
+        page.addView(label("Operaciones con B",18,true));
+        rowButtons(new String[]{"Bᵀ","det(B)"},new int[]{11,12});
+        rowButtons(new String[]{"B⁻¹","rango(B)"},new int[]{13,14});
+        rowButtons(new String[]{"Reducir B","traza(B)"},new int[]{15,16});
     }
     private void rowButtons(String[] captions,int[] operations) {
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);page.addView(row);
@@ -49,16 +56,29 @@ public class MainActivity extends Activity {
     private void calculate(int op) {
         resultGrid.removeAllViews();
         try {
-            double[][] a=editors[0].read();double[][] answer;
+            double[][] a=null,b=null,answer;
+            if(op<=10)a=editors[0].read();
+            if(op<=4||op>=11)b=editors[1].read();
             switch(op) {
-                case 0: answer=MatrixOps.add(a,editors[1].read());break;
-                case 1: answer=MatrixOps.subtract(a,editors[1].read());break;
-                case 2: answer=MatrixOps.multiply(a,editors[1].read());break;
-                case 3: answer=MatrixOps.transpose(a);break;
-                case 4: answer=new double[][]{{MatrixOps.determinant(a)}};break;
-                default: answer=MatrixOps.inverse(a);
+                case 0: answer=MatrixOps.add(a,b);break;
+                case 1: answer=MatrixOps.subtract(a,b);break;
+                case 2: answer=MatrixOps.subtract(b,a);break;
+                case 3: answer=MatrixOps.multiply(a,b);break;
+                case 4: answer=MatrixOps.multiply(b,a);break;
+                case 5: answer=MatrixOps.transpose(a);break;
+                case 6: answer=new double[][]{{MatrixOps.determinant(a)}};break;
+                case 7: answer=MatrixOps.inverse(a);break;
+                case 8: answer=new double[][]{{MatrixOps.rank(a)}};break;
+                case 9: answer=MatrixOps.rref(a);break;
+                case 10: answer=new double[][]{{MatrixOps.trace(a)}};break;
+                case 11: answer=MatrixOps.transpose(b);break;
+                case 12: answer=new double[][]{{MatrixOps.determinant(b)}};break;
+                case 13: answer=MatrixOps.inverse(b);break;
+                case 14: answer=new double[][]{{MatrixOps.rank(b)}};break;
+                case 15: answer=MatrixOps.rref(b);break;
+                default: answer=new double[][]{{MatrixOps.trace(b)}};
             }
-            String[] names={"A + B","A − B","A × B","Transpuesta de A","Determinante de A","Inversa de A"};
+            String[] names={"A + B","A − B","B − A","A × B","B × A","Aᵀ","det(A)","A⁻¹","rango(A)","forma reducida A","traza(A)","Bᵀ","det(B)","B⁻¹","rango(B)","forma reducida B","traza(B)"};
             result.setText(names[op]+"  ·  "+answer.length+" × "+answer[0].length);
             for(double[] values:answer) {
                 LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);resultGrid.addView(row);
@@ -69,6 +89,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch(IllegalArgumentException ex) { result.setText(ex.getMessage()); }
+        scroll.post(()->scroll.smoothScrollTo(0,result.getTop()));
     }
     private TextView label(String text,int sp,boolean bold) {
         TextView view=new TextView(this);view.setText(text);view.setTextSize(sp);view.setTextColor(0xff17243b);
